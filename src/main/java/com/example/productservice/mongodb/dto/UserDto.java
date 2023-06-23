@@ -1,6 +1,5 @@
 package com.example.productservice.mongodb.dto;
 
-import com.example.productservice.mongodb.domain.Company;
 import com.example.productservice.mongodb.domain.User;
 
 import lombok.AllArgsConstructor;
@@ -19,16 +18,16 @@ public class UserDto {
 	private long mobileNumber;
 	
 	private String email;
-
-
-    public UserDto(User user)
-    {
-    	this.userId=user.getUserId();
-    	this.name=user.getName();
-    	this.mobileNumber=user.getMobileNumber();
-    	this.email=user.getEmail();
-    	
-    }
-
+	
+	
+	public UserDto(User user) {
+		this.userId=user.getUserId();
+		this.name=user.getName();
+		this.mobileNumber=user.getMobileNumber();
+		this.email=user.getEmail();
+	}
+	
+	
+	
 
 }

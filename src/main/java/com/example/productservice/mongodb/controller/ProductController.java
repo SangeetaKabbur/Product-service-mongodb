@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,16 +15,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.example.productservice.mongodb.constants.Status;
 import com.example.productservice.mongodb.dto.CustomPagination;
 import com.example.productservice.mongodb.dto.ProductDto;
 import com.example.productservice.mongodb.exception.EntityDoesNotExistException;
+import com.example.productservice.mongodb.exception.InsufficientDataException;
 import com.example.productservice.mongodb.exception.InvalidProductException;
+import com.example.productservice.mongodb.exception.MethodNotAllowedException;
 import com.example.productservice.mongodb.service.ProductService;
-
+import com.mongodb.client.result.DeleteResult;
 import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,17 +44,10 @@ public class ProductController {
 	}
 
 	@PostMapping("/add")
-	public ResponseEntity<ProductDto> addProducts(@RequestBody ProductDto productDto) throws InvalidProductException
-	{
-		logger.info("ProductController.addProducts()");
-		return ResponseEntity.ok().body(productService.addProducts(productDto));
-	}
-
-	@PostMapping("/addstatus")
 	public ResponseEntity<ProductDto> addProduct(@RequestBody ProductDto productDto,
-			@RequestParam Status status) throws InvalidProductException {
+			@RequestParam Status status,@RequestParam String userId) throws InvalidProductException, InsufficientDataException, EntityDoesNotExistException {
 		logger.info("ProductController.addProducts()");
-		return ResponseEntity.ok().body(productService.addProduct(productDto, status));
+		return ResponseEntity.ok().body(productService.addProduct(productDto, status,userId));
 	}
 
 	@GetMapping("/get")
@@ -100,9 +92,10 @@ public class ProductController {
 	}
 
 	@PutMapping("/update-info")
-	public ResponseEntity<ProductDto> updateProductInfo(@RequestBody ProductDto productDto) throws InvalidProductException, EntityDoesNotExistException {
+	public ResponseEntity<ProductDto> updateProductInfo(@RequestBody ProductDto productDto, @RequestParam String userId) 
+			throws InvalidProductException, EntityDoesNotExistException, InsufficientDataException, MethodNotAllowedException {
 		logger.info("ProductController.updateProductInfo()");
-		return ResponseEntity.ok().body(productService.updateProductInfo(productDto));
+		return ResponseEntity.ok().body(productService.updateProductInfo(productDto,userId));
 	}
 
 	@GetMapping("/pagination/{page}/{size}")
@@ -119,30 +112,30 @@ public class ProductController {
 		productService.deleteById(productDto);
 	}
 
-	@DeleteMapping("/deleteById")
-	public ResponseEntity<HttpStatus> deleteProduct(@RequestParam String id)
-	{
-		logger.info("ProductController.deleteProduct()");
-		try
-		{
-			this.productService.deleteProduct(id);
-			return new ResponseEntity<>(HttpStatus.OK);
-		}
-		catch(Exception e)
-		{
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	@DeleteMapping("deleteById/{id}")
+	public ResponseEntity<DeleteResult> deleteProductById(@PathVariable(value = "id") String id,@RequestParam String userId) 
+			throws EntityDoesNotExistException, InsufficientDataException, MethodNotAllowedException{
+		logger.info("OrderController.deleteOrderById()");
+		return ResponseEntity.ok().body(productService.deleteProductById(id,userId));
 	}
 
 	@GetMapping("/page/list")
 	public CustomPagination getProductList(@RequestParam(required = false) String search,
 			@RequestParam(required = false) Status status, @PageableDefault(value = 6) Pageable pageable,
-			PagedResourcesAssembler pagedResourcesAssembler) {
+			@RequestParam String userId ,PagedResourcesAssembler pagedResourcesAssembler) 
+					throws EntityDoesNotExistException, InsufficientDataException{
 		logger.info("UserResource.getClientLists()");
-		Page<ProductDto> product =productService.getProductList(search, status, pageable);
+		Page<ProductDto> product =productService.getProductList(search, status, pageable,userId);
 		PagedModel<ProductDto> pageResult = pagedResourcesAssembler.toModel(product);
 		return new CustomPagination(pageResult.getContent(), product.getSize(), product.getTotalElements(),
 				product.getNumber(), product.getTotalPages(), pageResult.getLinks());
 	}
 
+	@GetMapping("/get/{id}")
+	public ResponseEntity<ProductDto> getById(@PathVariable(value = "id") String id,
+			@RequestParam String userId) throws EntityDoesNotExistException, MethodNotAllowedException{
+		logger.info("ProductController.getById()");
+		return ResponseEntity.ok().body(productService.getProductByIdd(id,userId));
+	}
+	
 }

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.productservice.mongodb.constants.Status;
 import com.example.productservice.mongodb.domain.Product;
+import com.example.productservice.mongodb.domain.User;
 import com.example.productservice.mongodb.dto.AggregationCount;
 import com.example.productservice.mongodb.dto.ProductDto;
 import com.mongodb.client.result.DeleteResult;
@@ -42,7 +43,15 @@ public class ProductRepositoryImpl implements ProductRepository{
 	MongoOperations mongoOperations;
 
 	@Override
-	public Product addProducts(Product product) {
+	public User findUserById(String userId) {
+		logger.info("ProductRepositoryImpl.findUserById()");
+		Query query=new Query();
+		query.addCriteria(Criteria.where("userId").is(userId));
+		return mongoTemplate.findOne(query,User.class);
+	}
+
+	@Override
+	public Product addProduct(Product product) {
 		logger.info("ProductRepositoryImpl.addProducts()");
 		return mongoTemplate.save(product);
 
@@ -181,22 +190,21 @@ public class ProductRepositoryImpl implements ProductRepository{
 	}
 
 	@Override
-	public DeleteResult deleteById(String id) {
+	public DeleteResult deleteProductById(String id) {
 		logger.info("ProductRepositoryImpl.deleteById()");
 		Query query=new Query();
-		query.addCriteria(Criteria.where("_id").is(id));
-		return mongoTemplate.remove(query, Product.class);
+		query.addCriteria(Criteria.where("userId").is(id));
+		return mongoTemplate.remove(query,Product.class);
 	}
 
-
-
 	@Override
-	public Page<ProductDto> getProductList( String search, Status status, Pageable pageable) {
+	public Page<ProductDto> getProductList( String search, Status status, Pageable pageable,String userId) {
 		logger.info("ProductRepositoryImpl.getProductList()");
 		try {
 			Criteria criteria = new Criteria();
 			List<Criteria> criteriaList = new ArrayList<>();
 			List<AggregationOperation> aggregationOperations = new ArrayList<>();
+			criteriaList.add(Criteria.where("userId").is(userId));
 			if (StringUtils.isNotBlank(search)) {
 				criteriaList.add(Criteria.where("name").regex(search, "i"));
 			}
@@ -248,7 +256,30 @@ public class ProductRepositoryImpl implements ProductRepository{
 				.with(PageRequest.of(page, size));
 		return mongoTemplate.find(query, Product.class);
 	}
+
+	@Override
+	public boolean findUserByIdd(String userId) {
+		logger.info("ProductRepositoryImpl.findUserByIdd()");
+		Query query=new Query();
+		query.addCriteria(Criteria.where("userId").is(userId));
+		return mongoTemplate.exists(query,User.class);
+	}
+
+	@Override
+	public String getSellerIdByProductId(String id) {
+		logger.info("ProductRepositoryImpl.getSellerIdByProductId()");
+		Query query = new Query(Criteria.where("_id").is(id));
+		query.fields().include("userId"); // Include only the sellerId field in the result
+
+		Product product = mongoTemplate.findOne(query, Product.class);
+		if (product != null) {
+			return product.getUserId();
+		}
+
+		return null; // Seller ID not found
+	}
 }
+
 
 
 

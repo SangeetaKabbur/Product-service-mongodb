@@ -8,14 +8,15 @@ import org.springframework.data.domain.Pageable;
 
 import com.example.productservice.mongodb.constants.Status;
 import com.example.productservice.mongodb.domain.Product;
+import com.example.productservice.mongodb.domain.User;
 import com.example.productservice.mongodb.dto.ProductDto;
 import com.mongodb.client.result.DeleteResult;
 
 public interface ProductRepository {
 
-	Product addProducts(Product product);
-
-	//List<Product> find(String name);
+	User findUserById(String userId);
+	
+	Product addProduct(Product product);
 
 	Product update(Product product);
 
@@ -45,12 +46,16 @@ public interface ProductRepository {
 	
     List<Product> findByName(String name);
 
-	DeleteResult deleteById(String id);
+	DeleteResult deleteProductById(String userIdd);
 
-	Page<ProductDto> getProductList(String search, Status status, Pageable pageable);
+	Page<ProductDto> getProductList(String search, Status status, Pageable pageable, String userId);
 
 	List<Product> findByStatus(Status active);
 
 	List<Product> findByStatusAndPaginated(Status status, int page, int size);
+
+	boolean findUserByIdd(String userId);
+
+	String getSellerIdByProductId(String productId);
 
 }

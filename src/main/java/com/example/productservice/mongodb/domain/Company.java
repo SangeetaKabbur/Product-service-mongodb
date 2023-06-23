@@ -2,10 +2,14 @@ package com.example.productservice.mongodb.domain;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.productservice.mongodb.dto.UserInfoDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,8 +30,10 @@ public class Company {
 
 	private String userId;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss", timezone = "IST")
 	private LocalDateTime createdDate;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss", timezone = "IST")
 	private LocalDateTime updatedDate;
 
 	public Company(String companyName, int totalEmployees, String userId) {

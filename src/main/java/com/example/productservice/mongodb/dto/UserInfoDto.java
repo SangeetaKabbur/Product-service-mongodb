@@ -2,7 +2,6 @@ package com.example.productservice.mongodb.dto;
 
 import com.example.productservice.mongodb.domain.Company;
 import com.example.productservice.mongodb.domain.User;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,6 +25,7 @@ public class UserInfoDto {
 
 	private int totalEmployees;
 	
+	
 	//private Object company;
 
 	public UserInfoDto(Company company)
@@ -42,9 +42,6 @@ public class UserInfoDto {
 		this.name=user.getName();
 		this.mobileNumber=user.getMobileNumber();
 		this.email=user.getEmail();
-
+		
 	}
-
-
-
 }
